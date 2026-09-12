@@ -1,0 +1,151 @@
+body {
+  margin: 0;
+  background: #f5f7fb;
+  color: #1f2937;
+}
+
+button {
+  cursor: pointer;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card {
+  width: 360px;
+  padding: 32px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-card input {
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.login-card button,
+.dashboard-header button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #111827;
+  color: white;
+}
+
+.error {
+  color: #dc2626;
+}
+
+.dashboard {
+  max-width: 1100px;
+  margin: auto;
+  padding: 30px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin: 30px 0;
+}
+
+.summary-card,
+.item-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+}
+
+.summary-card strong {
+  font-size: 32px;
+}
+
+.dashboard-section {
+  margin-top: 35px;
+}
+
+.item-card {
+  margin-bottom: 12px;
+}
+
+@media (max-width: 700px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-header {
+    align-items: flex-start;
+    gap: 15px;
+    flex-direction: column;
+  }
+}
+
+.action-form {
+  display: grid;
+  gap: 12px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.action-form input,
+.action-form textarea,
+.action-form select {
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.action-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.action-form button {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #111827;
+  color: white;
+}
+
+.success-message {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.status-control {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 260px;
+}
+
+.status-control label {
+  font-weight: 600;
+}
+
+.status-control select {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+}
