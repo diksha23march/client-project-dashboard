@@ -1,4 +1,8 @@
-const API_URL = "http://localhost:5000/api";
+const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL ||
+  "http://localhost:5000";
+
+const API_URL = `${BACKEND_URL}/api`;
 
 // ============================================
 // REFRESH ACCESS TOKEN
@@ -31,7 +35,6 @@ const refreshAccessToken = async () => {
 
 // ============================================
 // GENERAL AUTHENTICATED REQUEST
-// Automatically refreshes expired access token
 // ============================================
 
 const authenticatedRequest = async (
@@ -39,7 +42,6 @@ const authenticatedRequest = async (
   options: RequestInit = {},
   token?: string
 ) => {
-  // Always prefer the latest token stored in localStorage.
   let accessToken =
     localStorage.getItem("accessToken") || token || "";
 
@@ -60,7 +62,6 @@ const authenticatedRequest = async (
 
   let data = await response.json();
 
-  // Our backend uses this message when JWT is expired/invalid.
   if (
     response.status === 403 &&
     data.message === "Invalid or expired access token"
@@ -106,7 +107,6 @@ export const login = async (
         "Content-Type": "application/json",
       },
       credentials: "include",
-
       body: JSON.stringify({
         email,
         password,
@@ -134,6 +134,47 @@ export const getProjects = async (
 ) => {
   return authenticatedRequest(
     `${API_URL}/projects`,
+    {
+      method: "GET",
+    },
+    token
+  );
+};
+
+// ============================================
+// CREATE PROJECT
+// ============================================
+
+export const createProject = async (
+  token: string,
+  projectData: {
+    name: string;
+    description: string;
+  }
+) => {
+  return authenticatedRequest(
+    `${API_URL}/projects`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(projectData),
+    },
+    token
+  );
+};
+
+// ============================================
+// GET PROJECT MEMBERS
+// ============================================
+
+export const getProjectMembers = async (
+  token: string,
+  projectId: number
+) => {
+  return authenticatedRequest(
+    `${API_URL}/projects/${projectId}/members`,
     {
       method: "GET",
     },
@@ -175,7 +216,6 @@ export const getActivities = async (
 
 // ============================================
 // GET USERS
-// ADMIN / PROJECT MANAGER
 // ============================================
 
 export const getUsers = async (
@@ -203,11 +243,9 @@ export const addProjectMember = async (
     `${API_URL}/projects/${projectId}/members`,
     {
       method: "POST",
-
       headers: {
         "Content-Type": "application/json",
       },
-
       body: JSON.stringify({
         userId,
       }),
@@ -234,11 +272,9 @@ export const createTask = async (
     `${API_URL}/tasks`,
     {
       method: "POST",
-
       headers: {
         "Content-Type": "application/json",
       },
-
       body: JSON.stringify(taskData),
     },
     token
@@ -258,11 +294,9 @@ export const updateTaskStatus = async (
     `${API_URL}/tasks/${taskId}/status`,
     {
       method: "PATCH",
-
       headers: {
         "Content-Type": "application/json",
       },
-
       body: JSON.stringify({
         status,
       }),
