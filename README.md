@@ -1,60 +1,32 @@
-# Real-Time Client Project Dashboard
+# Client Project Dashboard
 
-A full-stack role-based project management dashboard built with React, TypeScript, Node.js, Express, PostgreSQL, JWT authentication, and Socket.IO.
+A full-stack role-based project and task management dashboard with real-time updates.
 
-The application allows administrators, project managers, and developers to interact with projects and tasks according to their assigned roles.
+## Live Application
+
+Frontend: https://client-project-dashboard-seven-lac.vercel.app
+
+Backend API: https://client-project-dashboard-api.vercel.app
+
+## Repository
+
+https://github.com/diksha23march/client-project-dashboard
 
 ## Features
 
-### Authentication
-- User registration and login
-- JWT access-token authentication
-- Refresh-token support
+- JWT-based authentication with access and refresh tokens
 - Refresh token stored in an HttpOnly cookie
-- Automatic access-token refresh on the frontend
-- Protected backend API routes
-
-### Role-Based Access Control
-
-#### Admin
-- View projects and tasks
-- Access user information
-- Create and manage projects
-- Add developers to projects
-- Create and assign tasks
-- View activity
-
-#### Project Manager
-- View projects managed by them
-- Add developers to their projects
-- Create and assign tasks
-- View tasks belonging to their projects
-- View team activity
-
-#### Developer
-- View projects they belong to
-- View only tasks assigned to them
-- Update the status of their assigned tasks
-- View relevant activity
-
-Role restrictions are enforced on the backend using authentication and authorization middleware.
-
-## Task Management
-
-Tasks support:
-
-- Title and description
-- Priority: LOW, MEDIUM, HIGH
-- Status: TODO, IN_PROGRESS, COMPLETED
-- Project assignment
-- Developer assignment
-- Activity tracking
-
-## Real-Time Updates
-
-Socket.IO is used to provide real-time task updates.
-
-When task information or status changes, connected dashboards can receive the update without manually refreshing the page.
+- Three roles:
+  - **Admin** — full access
+  - **Project Manager** — create/manage projects, add developers, create and assign tasks, and view activity for managed projects
+  - **Developer** — view assigned tasks and update task status
+- Backend-enforced role-based authorization
+- Project membership management
+- Task creation, assignment, priority, and status tracking
+- Activity logging
+- Real-time refresh using Socket.IO
+- PostgreSQL database hosted on Neon
+- Deployed frontend and backend on Vercel
 
 ## Tech Stack
 
@@ -69,14 +41,18 @@ When task information or status changes, connected dashboards can receive the up
 - Node.js
 - Express
 - TypeScript
+- PostgreSQL
+- `pg`
 - Socket.IO
 - JWT
 - bcrypt
 - cookie-parser
+- CORS
 
-### Database
-- PostgreSQL
-- pg
+### Infrastructure
+- Neon PostgreSQL
+- Vercel
+- GitHub
 
 ## Project Structure
 
@@ -86,9 +62,9 @@ client-project-dashboard/
 │   ├── src/
 │   │   ├── pages/
 │   │   ├── services/
-│   │   ├── App.tsx
-│   │   └── App.css
-│   └── package.json
+│   │   └── ...
+│   ├── package.json
+│   └── vite.config.ts
 │
 ├── server/
 │   ├── src/
@@ -96,49 +72,48 @@ client-project-dashboard/
 │   │   ├── controllers/
 │   │   ├── middleware/
 │   │   ├── routes/
-│   │   └── index.ts
-│   └── package.json
+│   │   └── server.ts
+│   ├── package.json
+│   └── vercel.json
 │
 ├── .gitignore
 └── README.md
 ```
 
-## Environment Variables
+## Local Setup
 
-Create a `.env` file inside the `server` directory.
+### Prerequisites
 
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=client_project_dashboard
-DB_USER=postgres
-DB_PASSWORD=your_postgresql_password
+Install:
 
-JWT_ACCESS_SECRET=your_access_token_secret
-JWT_REFRESH_SECRET=your_refresh_token_secret
-```
+- Node.js
+- npm
+- PostgreSQL, or use a hosted PostgreSQL database such as Neon
 
-Do not commit the `.env` file to Git.
-
-## Running the Project
-
-### 1. Install Frontend Dependencies
+### 1. Clone the repository
 
 ```bash
-cd client
-npm install
+git clone https://github.com/diksha23march/client-project-dashboard.git
+cd client-project-dashboard
 ```
 
-### 2. Install Backend Dependencies
+### 2. Backend setup
 
 ```bash
 cd server
 npm install
 ```
 
-### 3. Start Backend
+Create a `.env` file inside `server/`:
 
-From the `server` directory:
+```env
+DATABASE_URL=your_postgresql_connection_string
+JWT_ACCESS_SECRET=your_access_token_secret
+JWT_REFRESH_SECRET=your_refresh_token_secret
+CLIENT_URL=http://localhost:5173
+```
+
+Start the backend:
 
 ```bash
 npm run dev
@@ -150,11 +125,19 @@ The API runs at:
 http://localhost:5000
 ```
 
-### 4. Start Frontend
+Database test endpoint:
 
-From the `client` directory:
+```text
+http://localhost:5000/api/db-test
+```
+
+### 3. Frontend setup
+
+Open another terminal:
 
 ```bash
+cd client
+npm install
 npm run dev
 ```
 
@@ -164,21 +147,221 @@ The frontend runs at:
 http://localhost:5173
 ```
 
-## Security
+The frontend uses `http://localhost:5000` as a fallback backend URL during local development.
 
-- Passwords are hashed using bcrypt.
-- Refresh tokens are stored in HttpOnly cookies.
-- Protected routes require JWT authentication.
-- Role authorization is enforced at the API level.
-- Developers cannot access tasks assigned to other developers.
-- Project Managers are restricted to projects they manage.
+For a custom backend URL, create `client/.env`:
+
+```env
+VITE_BACKEND_URL=http://localhost:5000
+```
+
+## Database Schema
+
+The application uses five core tables:
+
+### `users`
+Stores user accounts, password hashes, roles, and timestamps.
+
+### `projects`
+Stores project information, project creator, and project manager.
+
+### `project_members`
+Many-to-many relationship between users and projects.
+
+### `tasks`
+Stores task title, description, status, priority, project, assignee, creator, updater, due date, and timestamps.
+
+### `activity_logs`
+Stores user actions associated with projects and tasks.
+
+### Relationship overview
+
+```text
+users
+  ├── creates/manages ──> projects
+  ├── belongs to ───────> projects through project_members
+  └── assigned to ──────> tasks
+
+projects
+  ├── has many ─────────> project_members
+  ├── has many ─────────> tasks
+  └── has many ─────────> activity_logs
+
+tasks
+  └── has many ─────────> activity_logs
+```
+
+## Roles and Authorization
+
+Authorization is enforced on the backend, not only in the UI.
+
+### Admin
+- Full project access
+- Full task access
+- Can manage project members
+- Can view all activity
+
+### Project Manager
+- Can create projects
+- Can manage projects they are responsible for
+- Can add developers to projects
+- Can create and assign tasks
+- Can view activity for their projects
+
+### Developer
+- Can view only assigned tasks
+- Can update the status of assigned tasks
+- Cannot view other developers' tasks
+
+## Authentication Design
+
+The application uses two JWTs:
+
+- **Access token** — short-lived, expires in 15 minutes
+- **Refresh token** — expires in 7 days
+
+The refresh token is stored in an **HttpOnly cookie**.
+
+For local development the cookie uses:
+
+- `secure: false`
+- `sameSite: "lax"`
+
+For production it uses:
+
+- `secure: true`
+- `sameSite: "none"`
+
+The frontend retries requests with a refreshed access token when the access token has expired.
+
+## Real-Time Design
+
+Socket.IO is used for real-time notifications.
+
+Instead of broadcasting complete task objects to every connected user, the backend emits a generic:
+
+```text
+tasks-changed
+```
+
+event.
+
+When the client receives this event, it refetches data from the protected REST API. The REST endpoints apply role-based filtering before returning data.
+
+This avoids exposing task details through the WebSocket channel and keeps authorization centralized in the backend.
+
+## Architectural Decisions
+
+### Why Socket.IO?
+
+Socket.IO was selected because it provides:
+
+- bidirectional communication
+- automatic reconnection
+- a simple event-based API
+- convenient integration with Express and React
+
+### Why PostgreSQL?
+
+The project contains strongly related data such as users, projects, project memberships, tasks, and activity logs. PostgreSQL provides relational integrity and foreign-key support that fit this model well.
+
+### Token storage approach
+
+The access token is stored in localStorage and the refresh token is stored in an HttpOnly cookie.
+
+This keeps the refresh token inaccessible to frontend JavaScript while allowing the application to refresh short-lived access tokens.
+
+For a larger production application, a memory-only access token or Backend-for-Frontend architecture would further reduce exposure to XSS.
+
+### Job queue choice
+
+A background job queue was not added because the current project does not contain long-running or asynchronous jobs that require queue processing.
+
+Database writes and activity logs are lightweight and are handled synchronously.
+
+If the system later adds email delivery, scheduled reports, notifications, or heavy background processing, a queue such as BullMQ with Redis would be appropriate.
+
+## Security Measures
+
+- Passwords hashed using bcrypt
+- Short-lived JWT access tokens
+- HttpOnly refresh-token cookie
+- Role authorization middleware
+- Protected API routes
+- Parameterized PostgreSQL queries
+- CORS configured for the frontend origin
+- Task data is not broadcast directly through Socket.IO
+
+## Production Deployment
+
+### Backend
+Deployed on Vercel:
+
+```text
+https://client-project-dashboard-api.vercel.app
+```
+
+Production environment variables:
+
+```text
+DATABASE_URL
+JWT_ACCESS_SECRET
+JWT_REFRESH_SECRET
+CLIENT_URL
+```
+
+### Frontend
+Deployed on Vercel:
+
+```text
+https://client-project-dashboard-seven-lac.vercel.app
+```
+
+Frontend environment variable:
+
+```text
+VITE_BACKEND_URL=https://client-project-dashboard-api.vercel.app
+```
 
 ## Production Build
 
-The React frontend can be built using:
+Frontend:
 
 ```bash
+cd client
 npm run build
 ```
 
-The project has been verified with a successful TypeScript and Vite production build.
+## Known Limitations
+
+- Different accounts opened in multiple tabs of the same browser share localStorage, so their access tokens can overwrite each other. Use separate browsers or incognito sessions when testing different roles simultaneously.
+- Socket.IO currently broadcasts a generic change notification to connected clients. The notification contains no task data, and protected APIs still enforce authorization. A larger system could use authenticated per-user or per-project Socket.IO rooms.
+- Password reset and email verification are not implemented.
+- Pagination and advanced filtering are not implemented.
+- Some backend task-management operations may not yet have dedicated UI controls.
+- A Docker setup is not currently included; local setup uses npm and PostgreSQL/Neon directly.
+- A background job queue is not included because the current scope does not require long-running jobs.
+
+## Demo Accounts
+
+For assessment/testing:
+
+```text
+Admin
+Email: admin@test.com
+Password: Test1234
+
+Project Manager
+Email: manager@test.com
+Password: Test1234
+
+Developer
+Email: developer@test.com
+Password: Test1234
+```
+
+Use separate browser sessions when testing multiple roles at the same time.
+
+## Author
+
+Diksha
